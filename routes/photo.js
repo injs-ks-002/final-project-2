@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/photos.controller')
-//const middleware = require('../middelwares/auth')
 router.use(express.json())
 
 router.get('/', controller.getPhoto)

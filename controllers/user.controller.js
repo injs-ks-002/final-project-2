@@ -4,6 +4,7 @@ const User = require("../models/index").User;
 const bcrypt = require('bcrypt')
 const { generateToken } = require ('../middleware/auth.js');
 const { error } = require('console');
+const {validationResult} = require('express-validator')
 
 exports.getUser = async (req, res) => {
     return User.findAll().then(users=> {
@@ -16,41 +17,6 @@ exports.getUser = async (req, res) => {
         res.status(500).send({
             status : "FAIL",
             message : 'INTERNAL SERVER ERROR'
-        })
-    })
-}
-
-exports.postUser = async (req, res) => {
-    const body = req.body;
-    const email = body.email;
-    const full_name = body.full_name;
-    const username = body.username;
-    const password = body.password;
-    const profile_image_url = body.profile_image_url;
-    const age = body.age;
-    const phone_number = body.phone_number;
-
-    return User.create({
-        email: email,
-        full_name: full_name,
-        username: username,
-        password: password,
-        profile_image_url: profile_image_url,
-        age: age,
-        phone_number: phone_number
-
-    })
-    .then(user => {
-        res.status(200).send({
-           status : "SUCCESS",
-           message : "User berhasil dibuat",
-           data : user
-        })
-    }).catch(e => {
-        console.log(e)
-        res.status(500).send({
-            status : "FAIL",
-            message : "Gagal membuat user"
         })
     })
 }
@@ -71,6 +37,13 @@ exports.signUp = async(req, res) => {
 
         },
     }).then((user) => {
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+            return res.status(422).json({
+                "errors": errors.array()
+            })
+        }
+       else{
         if (user) {
             return res.status(400).send({
                 message: "Email already Exist",
@@ -107,13 +80,22 @@ exports.signUp = async(req, res) => {
                     message : "Gagal membuat user"
                 });
             });
-    }).catch((e) => {
-        console.log(e);
-        res.status(400).send({
-            status : "FAIL",
-            message : "Gagal membuat user"
-        });
-});
+       }
+    })
+    .catch(err => {
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+            return res.status(422).json({
+                "errors": errors.array()
+            })
+        } else {
+            console.log(err)
+            res.status(400).send({
+                status: "400",
+                message: "Failed for add comment to database"
+            })
+        }
+    })
 };
 
 exports.signIn = async(req, res) => {
@@ -149,8 +131,8 @@ exports.signIn = async(req, res) => {
                 token: token,
             });
         })
-        .catch((e) => {
-            console.log(e);
+        .catch((err) => {
+            console.log(err);
             res.status(400).send({
                 status : "FAIL",
                 message : "Gagal login"

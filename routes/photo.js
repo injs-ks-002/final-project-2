@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/photos.controller')
-router.use(express.json())
+const auth = require('../middleware/auth')
+const photo = require('../middleware/photo.validation')
 
-router.get('/', controller.getPhoto)
-router.post('/', controller.postPhoto)
-router.put('/:photoId', controller.updatePhoto)
-router.delete('/:photoId', controller.deleteUser)
+router.get('/', auth.verify, controller.getPhoto)
+router.post('/', auth.verify, photo.validation, controller.postPhoto)
+router.put('/:photoId', auth.verify, photo.validation, controller.updatePhoto)
+router.delete('/:photoId', auth.verify, controller.deleteUser)
 module.exports = router;

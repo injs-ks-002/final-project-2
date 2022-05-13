@@ -13,15 +13,45 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       this.belongsTo(models.User,{
         foreignKey: 'UserId',
-        as: "user"
+        as: "User"
       })
+      this.hasMany(models.Comment, {
+        foreignKey: 'PhotoId',
+        as: 'Comment'
+      })
+      // this.belongsTo(models.Comment, {
+      //   foreignKey: 'PhotoId',
+      //   as: 'Comments'
+      // })
     }
   }
   Photo.init({
-    title: DataTypes.STRING,
-    caption: DataTypes.TEXT,
-    poster_image_url: DataTypes.TEXT,
-    UserId: DataTypes.INTEGER
+    title: {
+      type: DataTypes.STRING,
+      validate: {
+        notEmpty: true
+      }
+    },
+    caption: {
+      type: DataTypes.TEXT,
+      validate: {
+        notEmpty: true
+      }
+    },
+    poster_image_url: {
+      type: DataTypes.TEXT,
+      validate: {
+        isUrl: true,
+        notEmpty: true
+      }
+    },
+    UserId: {
+      type: DataTypes.INTEGER,
+      validate: {
+        isInt: true,
+        notEmpty: true
+      }
+    }
   }, {
     sequelize,
     modelName: 'Photo',

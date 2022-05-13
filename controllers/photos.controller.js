@@ -1,14 +1,27 @@
-const fs = require('fs')
-const db = require('../config/db');
-const Photo = require("../models/index").Photo;
-const User = require("../models/index").User;
-const jwt = require('jsonwebtoken');
+const {Photo, Comment, User} = require("../models/index");
+const {validationResult} = require('express-validator')
 
 exports.getPhoto = async (req, res) => {
-    return Photo.findAll().then(photos=> {
+    const userId = req.id
+    return await Photo.findAll({
+        where: {
+            UserId: userId
+        },
+        include: [{
+            model: User,
+            as: 'User'
+        }]
+    }).then(photo=> {
+        if (photo.length === 0) {
+            res.status(404).send({
+                status: '404',
+                message: 'Photo data is not found'
+            })
+            return
+        }
         res.status(200).send({
             status : "SUCCES",
-            data: photos
+            photos: photo
         })
     }).catch(e => {
         console.log(e)
@@ -24,27 +37,36 @@ exports.postPhoto = async (req, res) => {
     const caption = req.body.caption;
     const poster_image_url = req.body.poster_image_url;
     const userId = req.id;
+    const errors = validationResult(req)
 
     await Photo.create({
         title: title,
         caption: caption,
         poster_image_url: poster_image_url,
-        userId : userId
+        UserId : userId
     })
     .then((photo) => {
-        res.status(200).send({
-           id: photo.id,
-           title: photo.title,
-           poster_image_url: photo.poster_image_url,
-           caption: photo.caption,
-           userId: photo.userId,
-        })
+        if (!errors.isEmpty()) {
+            return res.status(422).json(errors.array())
+        } else {
+            res.status(200).send({
+                id: photo.id,
+                title: photo.title,
+                poster_image_url: photo.poster_image_url,
+                caption: photo.caption,
+                userId: photo.userId,
+             })
+        }
     }).catch((e) => {
-        console.log(e)
-        res.status(503).json({
-            message : "INTERNAL SERVER ERROR",
-            error :e,
-        })
+        if (!errors.isEmpty()) {
+            return res.status(422).json(errors.array())
+        } else {
+            console.log(e)
+            res.status(503).json({
+                message : "INTERNAL SERVER ERROR",
+                status: "503"
+            })
+        }
     })
 }
 
@@ -58,30 +80,55 @@ exports.updatePhoto = async (req, res) => {
         caption,
         poster_image_url,
     };
+    const userId = req.id;
+    const errors = validationResult(req)
     await Photo.update(dataPhoto, {
-        where : { id: photoId},
+        where : { id: photoId, UserId: userId},
         returning: true,
     })
-    .then((photo) => {
-        res.status(200).json({
-            photo: photo[1]
-        })
+    .then((photos) => {
+        if (!errors.isEmpty()) {
+            return res.status(422).json(errors.array())
+        } else {
+            if (!photos) {
+                res.status(400).send({
+                    status: '400',
+                    message: 'Failed for update photo data'
+                })
+                return
+            }
+            res.status(200).json({
+                "photo": photos[1]
+            })
+        }
     })
     .catch((error) => {
-        console.log(error);
-        res.status(503).json({
-            message: "INTERNAL SERVER",
-        });
+        if (!errors.isEmpty()) {
+            return res.status(422).json(errors.array())
+        } else {
+            console.log(error);
+            res.status(503).json({
+                message: "INTERNAL SERVER",
+            });
+        }
     })
 }
 
 
-exports.deleteUser = (req, res) => {
+exports.deleteUser = async (req, res) => {
     const photoId = req.params.photoId;
-    Photo.destroy({
-      where: {  id: photoId },
+    const userId = req.id;
+    await Photo.destroy({
+      where: {  id: photoId, UserId: userId},
     })
-    .then (() => {
+    .then (photo => {
+        if (!photo) {
+            res.status(400).send({
+                status: '400',
+                message: 'Failed for delete photo data'
+            })
+            return
+        }
         res.status(200).json({
             message: "Your Photo has been succesfully deleted",
         });

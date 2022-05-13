@@ -1,4 +1,5 @@
 const {check, validationResult} = require('express-validator');
+const {User} = require('../models/index')
 
 const rules = [
     check('full_name', "harus string") 
@@ -14,6 +15,17 @@ const rules = [
             .escape(),
 
     check('username')
+            .custom(value => {
+                return User.findOne({
+                   where: {
+                      username: value
+                   }
+                }).then(user => {
+                   if (user) {
+                      return Promise.reject('Username already in use')
+                   }
+                })
+            })
             .notEmpty()
             .trim()
             .escape(),

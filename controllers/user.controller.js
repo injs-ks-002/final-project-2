@@ -95,12 +95,12 @@ exports.signUp = async(req, res) => {
 
 exports.signIn = async(req, res) => {
     const body = req.body;
-    const username = body.username;
+    const email = body.email;
     const password = body.password;
 
     return User.findOne({
             where: {
-                username: username,
+                email: email,
             },
         })
         .then(user => {
@@ -119,7 +119,7 @@ exports.signIn = async(req, res) => {
             const token = generateToken({
                 id: user.id,
                 full_name: user.full_name,
-                username: user.username,
+                email: user.email,
             });
             res.status(200).send({
                 status: "SUKSES",

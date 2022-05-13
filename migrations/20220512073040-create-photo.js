@@ -28,19 +28,19 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
-    }).then(() =>
-    queryInterface.addConstraint("Photos", {
-      fields: ["UserId"],
-      type: "foreign key",
-      name: "user_fk",
-      references: {
-        table: "Users",
-        field: "id",
-      },
-      onDelete: "cascade",
-      onUpdate: "cascade",
+    }).then(() => {
+      queryInterface.addConstraint("Photos", {
+        fields: ["UserId"],
+        type: "foreign key",
+        name: "user_fk",
+        references: {
+          table: "Users",
+          field: "id",
+        },
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      })
     })
-  );
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Photos');

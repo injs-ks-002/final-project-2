@@ -1,9 +1,6 @@
-const fs = require('fs')
-const db = require('../config/db');
 const User = require("../models/index").User;
 const bcrypt = require('bcrypt')
 const { generateToken } = require ('../middleware/auth.js');
-const { error } = require('console');
 const {validationResult} = require('express-validator')
 
 exports.getUser = async (req, res) => {
@@ -67,10 +64,8 @@ exports.signUp = async(req, res) => {
                     full_name: user.full_name,
                     username: user.username,
                 });
-                res.status(200).send({
-                    status: "SUKSES",
-                    message: "SUCCES ADD USER",
-                    token: token,
+                res.status(201).json({
+                    "user": user
                 });
             })
             .catch((e) => {
@@ -141,7 +136,8 @@ exports.signIn = async(req, res) => {
 }
 
 exports.updateUser = async (req, res) => {
-    const id = req.params.userId;
+    var id = req.params.userId;
+    id = req.id
     const full_name = req.body.full_name;
     const email = req.body.email;
     const username = req.body.username;
@@ -155,30 +151,59 @@ exports.updateUser = async (req, res) => {
         profile_image_url,
         age,
         phone_number,
-      };
+    };
+    const errors = validationResult(req)
       await User.update(dataUser,
-          { where: { id: req.params.id },
+          { where: { id: id },
           returning : true,
         })
         .then((user) => {
-            res.status(200).json({
-                user: user[1]
-            })
+            if (!errors.isEmpty()) {
+                return res.status(422).json({
+                    "errors": errors.array()
+                })
+            } else {
+                if (req.params.userId != id) {
+                    res.status(400).send({
+                        status: '400',
+                        message: 'Failed for update photo data'
+                    })
+                    return
+                } else {
+                    res.status(200).json({
+                        user: user[1]
+                    })
+                }
+            }
         })
         .catch((error) => {
-            console.log(error);
-            res.status(500).json({
-                message: "INTERNAL SERVER",
-                error: error,
-            });
+            if (!errors.isEmpty()) {
+                return res.status(422).json({
+                    "errors": errors.array()
+                })
+            } else {
+                console.log(error);
+                res.status(500).json({
+                    message: "INTERNAL SERVER",
+                    error: error,
+                });
+            }
         })
 }
 exports.deleteUser = (req, res) => {
-    const id = req.params.userId;
+    var id = req.params.userId;
+    id = req.id
     User.destroy({
-      where: {  id: req.params.id },
+      where: {  id: id },
     })
     .then (() => {
+        if (req.params.userId != id) {
+            res.status(400).send({
+                status: '400',
+                message: 'Failed for update photo data'
+            })
+            return
+        }
         res.status(200).json({
             message: "Your User has been succesfully deleted",
         });

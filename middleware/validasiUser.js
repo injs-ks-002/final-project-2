@@ -18,7 +18,7 @@ const rules = [
             .trim()
             .escape(),
 
-    check('profil_image_url')
+    check('profile_image_url')
             .notEmpty()
             .isURL()
             .trim()

@@ -8,6 +8,6 @@ const verify = require('../middleware/auth').verify
 
 router.post('/register',rules, controller.signUp);
 router.post('/login', controller.signIn);
-router.put('/:id',verify, controller.updateUser);
-router.delete('/:id',verify, controller.deleteUser);
+router.put('/:userId',verify, controller.updateUser);
+router.delete('/:userId',verify, controller.deleteUser);
 module.exports = router;

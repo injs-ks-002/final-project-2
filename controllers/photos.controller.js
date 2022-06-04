@@ -49,7 +49,7 @@ exports.postPhoto = async (req, res) => {
         if (!errors.isEmpty()) {
             return res.status(422).json(errors.array())
         } else {
-            res.status(200).send({
+            res.status(201).send({
                 id: photo.id,
                 title: photo.title,
                 poster_image_url: photo.poster_image_url,
@@ -59,12 +59,12 @@ exports.postPhoto = async (req, res) => {
         }
     }).catch((e) => {
         if (!errors.isEmpty()) {
-            return res.status(422).json(errors.array())
+            return res.status(400).json(errors.array())
         } else {
             console.log(e)
-            res.status(503).json({
+            res.status(500).json({
                 message : "INTERNAL SERVER ERROR",
-                status: "503"
+                status: "500"
             })
         }
     })
@@ -115,7 +115,7 @@ exports.updatePhoto = async (req, res) => {
 }
 
 
-exports.deleteUser = async (req, res) => {
+exports.deletePhoto = async (req, res) => {
     const photoId = req.params.photoId;
     const userId = req.id;
     await Photo.destroy({

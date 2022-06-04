@@ -58,21 +58,28 @@ exports.signUp = async(req, res) => {
                 age : age,
                 phone_number : phone_number,
             })
-            .then((user) => {
-                const token = generateToken({
-                    id: user.id,
-                    full_name: user.full_name,
-                    username: user.username,
-                });
-                res.status(201).json({
-                    "user": user
-                });
+            .then(() => {
+                User.findOne({
+                    where : { email: email}
+                }).then(user =>{
+                    user = {
+                        id : user.id,
+                        email : user.email,
+                        full_name : user.full_name,
+                        username : user.username,
+                        profile_image_url: user.profile_image_url,
+                        age : user.age,
+                        phone_number : user.phone_number
+                        
+                    }
+                    res.status(201).json(user)
+                })
+                    
             })
             .catch((e) => {
                 console.log(e);
-                res.status(400).send({
-                    status : "FAIL",
-                    message : "Gagal membuat user"
+                res.status(500).send({
+                    message : "INTERNAL SERVER ERORR"
                 });
             });
        }
@@ -122,7 +129,6 @@ exports.signIn = async(req, res) => {
                 email: user.email,
             });
             res.status(200).send({
-                status: "SUKSES",
                 token: token,
             });
         })
@@ -171,7 +177,7 @@ exports.updateUser = async (req, res) => {
                     return
                 } else {
                     res.status(200).json({
-                        user: user[1]
+                        user: dataUser
                     })
                 }
             }

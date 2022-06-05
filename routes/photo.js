@@ -7,5 +7,5 @@ const photo = require('../middleware/photo.validation')
 router.get('/', auth.verify, controller.getPhoto)
 router.post('/', auth.verify, photo.validation, controller.postPhoto)
 router.put('/:photoId', auth.verify, photo.validation, controller.updatePhoto)
-router.delete('/:photoId', auth.verify, controller.deleteUser)
+router.delete('/:photoId', auth.verify, controller.deletePhoto)
 module.exports = router;

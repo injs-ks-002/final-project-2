@@ -1,9 +1,12 @@
 const {User, SocialMedia} = require('../models/index')
 const {validationResult} = require('express-validator')
+const errorFormatter = ({ msg }) => {
+    return `${msg}`;
+}
 
 exports.postSocialMedia = async (req, res) => {
     const {name, social_media_url} = req.body
-    const errors = validationResult(req)
+    const errors = validationResult(req).formatWith(errorFormatter)
 
     await SocialMedia.create({
         UserId: req.id,
@@ -12,7 +15,8 @@ exports.postSocialMedia = async (req, res) => {
     }).then(socialmedia => {
         if (!errors.isEmpty()) {
             return res.status(422).json({
-                "errors": errors.array()
+                'status': 422,
+                'message': errors.array().join(',')
             })
         } else {
             if (!socialmedia) {
@@ -28,7 +32,8 @@ exports.postSocialMedia = async (req, res) => {
     }).catch(err => {
         if (!errors.isEmpty()) {
             return res.status(422).json({
-                "errors": errors.array()
+                'status': 422,
+                'message': errors.array().join(',')
             })
         } else {
             console.log(err)
@@ -78,7 +83,7 @@ exports.putSocialMedia = async (req, res) => {
     const {name, social_media_url} = req.body
     const userId = req.id
     const id = req.params.socialMediaId
-    const errors = validationResult(req)
+    const errors = validationResult(req).formatWith(errorFormatter)
     try {
         const dbSocialMedia = await SocialMedia.findOne({
             where: {
@@ -89,7 +94,8 @@ exports.putSocialMedia = async (req, res) => {
 
         if (!errors.isEmpty()) {
             return res.status(422).json({
-                "errors": errors.array()
+                'status': 422,
+                'message': errors.array().join(',')
             })
         } else {
             if (!dbSocialMedia) {
@@ -129,7 +135,8 @@ exports.putSocialMedia = async (req, res) => {
     } catch {
         if (!errors.isEmpty()) {
             return res.status(422).json({
-                "errors": errors.array()
+                'status': 422,
+                'message': errors.array().join(',')
             })
         } else {
             res.status(503).send({

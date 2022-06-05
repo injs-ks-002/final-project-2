@@ -1,9 +1,12 @@
 const { Photo, User, Comment } = require('../models/index')
 const { validationResult } = require('express-validator')
+const errorFormatter = ({ msg }) => {
+    return `${msg}`;
+}
 
 exports.postComment = async (req, res) => {
     const body = req.body
-    const errors = validationResult(req)
+    const errors = validationResult(req).formatWith(errorFormatter)
 
     await Comment.create({
         UserId: req.id,
@@ -11,7 +14,10 @@ exports.postComment = async (req, res) => {
         comment: body.comment
     }).then(comments => {
         if (!errors.isEmpty()) {
-            return res.status(422).json(errors.array())
+            return res.status(422).json({
+                'status': 422,
+                'message': errors.array().join(',')
+            })
         } else {
             res.status(201).send({
                 comment: comments
@@ -19,7 +25,10 @@ exports.postComment = async (req, res) => {
         }
     }).catch(err => {
         if (!errors.isEmpty()) {
-            return res.status(422).json(errors.array())
+            return res.status(422).json({
+                'status': 422,
+                'message': errors.array().join(',')
+            })
         } else {
             console.log(err)
             res.status(400).send({
@@ -68,7 +77,7 @@ exports.putComment = async (req, res) => {
     } = req.body
     const userId = req.id
     const id = req.params.commentId
-    const errors = validationResult(req)
+    const errors = validationResult(req).formatWith(errorFormatter)
     try {
         const dbComment = await Comment.findOne({
             where: {
@@ -84,7 +93,10 @@ exports.putComment = async (req, res) => {
             })
         } else {
             if (!errors.isEmpty()) {
-                return res.status(422).json(errors.array())
+                return res.status(422).json({
+                    'status': 422,
+                    'message': errors.array().join(',')
+                })
             } else {
                 const updateComment = await Comment.update({
                     comment: comment
@@ -115,7 +127,10 @@ exports.putComment = async (req, res) => {
         }
     } catch {
         if (!errors.isEmpty()) {
-            return res.status(422).json(errors.array())
+            return res.status(422).json({
+                'status': 422,
+                'message': errors.array().join(',')
+            })
         } else {
             res.status(503).send({
                 status: "503",

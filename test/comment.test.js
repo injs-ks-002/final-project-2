@@ -6,10 +6,11 @@ let privateKey = 'helloworld'
 
 const userData = {
     email: "info@info.com",
-    password: "info123456"
+    password: "admin123"
 }
 var token = ''
 var userId = ''
+var commentId = ''
 
 const commentData = {
     UserId: userId,
@@ -23,7 +24,7 @@ const commentDataFailed = {
     comment: 1
 }
 
-beforeEach((done) => {
+beforeAll((done) => {
     request(app).post('/users/login')
         .send(userData)
         .end((err, res) => {
@@ -49,6 +50,7 @@ describe('POST /comments',  () => {
             .set('auth', `${token}`)
             .send(commentData)
             .then(res => {
+                commentId = res.body.comment.id
                 expect(res.status).toEqual(201)
                 expect(typeof res.body).toEqual("object")
                 expect(res.body.comment.PhotoId).toEqual(commentData.PhotoId)
@@ -103,7 +105,7 @@ describe('PUT /comments/:commentId',  () => {
     it('should send response with 200 status code', (done) => {
 
         request(app)
-            .put('/comments/1')
+            .put(`/comments/${commentId}`)
             .set('auth', `${token}`)
             .send(commentData)
             .then(res => {
@@ -121,7 +123,7 @@ describe('PUT /comments/:commentId',  () => {
 
     it('should send response with 422 status code', (done) => {
         request(app)
-            .put('/comments/1')
+            .put(`/comments/${commentId}`)
             .set('auth', `${token}`)
             .send(commentDataFailed)
             .then(res => {
@@ -142,7 +144,7 @@ describe('DELETE /comments/:commentId',  () => {
     it('should send response with 200 status code', (done) => {
 
         request(app)
-            .delete('/comments/1')
+            .delete(`/comments/${commentId}`)
             .set('auth', `${token}`)
             .then(res => {
                 expect(res.status).toEqual(200)
@@ -159,7 +161,7 @@ describe('DELETE /comments/:commentId',  () => {
 
     it('should send response with 400 status code', (done) => {
         request(app)
-            .delete('/comments/2')
+            .delete('/comments/1000')
             .set('auth', `${token}`)
             .then(res => {
                 expect(res.status).toEqual(400)

@@ -4,13 +4,14 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "NODE_ENV=test jest --runInBand --detectOpenHandles --forceExit",
+    "test": "NODE_ENV=test npx jest --detectOpenHandles",
     "start": "node .",
     "dev": "nodemon app.js",
     "db:create": "npx sequelize-cli db:create",
     "db:create:migrate": "sequelize migration:generate --name",
     "db:migrate": "npx sequelize-cli db:migrate",
-    "db:rollback": "npx sequelize-cli db:migrate:undo:all"
+    "db:rollback": "npx sequelize-cli db:migrate:undo:all",
+    "db:seed": "npx sequelize-cli db:seed:all"
   },
   "repository": {
     "type": "git",
